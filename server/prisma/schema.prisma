@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  RENTER
+  LANDLORD
+  ADMIN
+}
+
+enum ListingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+enum Availability {
+  AVAILABLE
+  OCCUPIED
+  UNDER_MAINTENANCE
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  DETAILS_CHECKED
+  VERIFIED
+}
+
+enum ReportType {
+  ELECTRICITY
+  WATER
+  FLOODING
+  ROAD_ACCESS
+  SECURITY
+  NETWORK
+  OTHER
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  fullName     String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  role         Role     @default(RENTER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  listings     Property[] @relation("LandlordListings")
+  reviews      Review[]
+  areaReports  AreaReport[]
+  viewingRequests ViewingRequest[]
+  auditEvents  AuditLog[] @relation("ActorAudit")
+}
+
+model Property {
+  id                String @id @default(cuid())
+  title             String
+  description       String
+  area              String
+  addressApprox     String?
+  propertyType      String
+  rentNaira         Int
+  rentPeriod        String @default("year")
+  bedrooms          Int
+  bathrooms         Int
+  amenities         String[]
+  imageUrls         String[]
+  landlordId        String
+  landlord          User @relation("LandlordListings", fields: [landlordId], references: [id])
+  status            ListingStatus @default(PENDING)
+  availability      Availability @default(AVAILABLE)
+  verification      VerificationStatus @default(UNVERIFIED)
+  verificationNotes String?
+  verifiedAt        DateTime?
+  lastConfirmedAt   DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  reviews           Review[]
+  areaReports       AreaReport[]
+  viewingRequests   ViewingRequest[]
+  @@index([area, rentNaira, bedrooms, status, availability])
+}
+
+model AreaReport {
+  id              String @id @default(cuid())
+  propertyId      String
+  property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  authorId        String
+  author          User @relation(fields: [authorId], references: [id])
+  type            ReportType
+  rating          Int?
+  summary         String
+  details         String?
+  sourceLabel     String @default("Resident report")
+  observedAt      DateTime?
+  moderation      ModerationStatus @default(PENDING)
+  createdAt       DateTime @default(now())
+  @@index([propertyId, type, moderation, createdAt])
+}
+
+model Review {
+  id           String @id @default(cuid())
+  propertyId   String
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       User @relation(fields: [authorId], references: [id])
+  overall      Int
+  landlord     Int?
+  listingMatch Int?
+  utilities    Int?
+  environment  Int?
+  comment      String
+  experience   String
+  moderation   ModerationStatus @default(PENDING)
+  createdAt    DateTime @default(now())
+  @@unique([propertyId, authorId])
+  @@index([propertyId, moderation, createdAt])
+}
+
+model ViewingRequest {
+  id          String @id @default(cuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  requesterId String?
+  requester   User? @relation(fields: [requesterId], references: [id])
+  name        String
+  phone       String
+  preferredAt DateTime?
+  message     String?
+  status      String @default("NEW")
+  createdAt   DateTime @default(now())
+  @@index([propertyId, createdAt])
+}
+
+model AuditLog {
+  id        String @id @default(cuid())
+  actorId   String?
+  actor     User? @relation("ActorAudit", fields: [actorId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  createdAt DateTime @default(now())
+}
