@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Search, MapPin, BedDouble, Bath, ShieldCheck, Zap, Droplets, CloudRain, CarFront, Phone, MessageCircle, SlidersHorizontal, ArrowRight, Heart, Menu, X, CheckCircle2, Clock3, ChevronDown, Info, CircleAlert } from 'lucide-react';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const API = import.meta.env.VITE_API_URL; 
 const demo = [
  {id:'demo-rumuola',title:'Bright 2-Bedroom Flat in Rumuola',area:'Rumuola',propertyType:'Flat',rentNaira:1800000,rentPeriod:'year',bedrooms:2,bathrooms:2,amenities:['Parking','Water storage','Tiled floors'],imageUrls:['https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80'],verification:'UNVERIFIED',rating:null,reviewCount:0,lastConfirmedAt:new Date().toISOString(),areaReports:[]},
  {id:'demo-woji',title:'Family Duplex in Woji',area:'Woji',propertyType:'Duplex',rentNaira:3500000,rentPeriod:'year',bedrooms:3,bathrooms:3,amenities:['Parking','Compound','Fenced property'],imageUrls:['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'],verification:'UNVERIFIED',rating:null,reviewCount:0,lastConfirmedAt:new Date().toISOString(),areaReports:[]},
